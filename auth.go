@@ -69,7 +69,7 @@ func VerifyToken(tokenString string) (usertkn string, err error) {
 
 	claims := token.Claims.(jwt.MapClaims)
 
-	usertkn = claims["username"].(string)
+	usertkn = claims["usertkn"].(string)
 
 	return usertkn, nil
 }
