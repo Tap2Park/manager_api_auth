@@ -3,9 +3,12 @@ package auth
 import (
 	"fmt"
 	"github.com/golang-jwt/jwt"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"time"
 )
+
+var secretKey = []byte(os.Getenv("SECRET_KEY"))
 
 // CreateToken generates a JSON Web Token (JWT) using the provided user token.
 // It takes the user token as input and returns the generated token string and an error, if any.
@@ -23,7 +26,7 @@ import (
 //	    fmt.Println("Token:", tokenString)
 //	}
 func CreateToken(usertkn string) (string, error) {
-	var secretKey = []byte(os.Getenv("SECRET_KEY"))
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
 			"usertkn": usertkn,
@@ -54,12 +57,13 @@ func CreateToken(usertkn string) (string, error) {
 //	    fmt.Println("User Token:", usertkn)
 //	}
 func VerifyToken(tokenString string) (usertkn string, err error) {
-	var secretKey = []byte(os.Getenv("SECRET_KEY"))
+
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return secretKey, nil
 	})
 
 	if err != nil {
+		log.Errorf("VerifyToken: %s", err)
 		return usertkn, err
 	}
 
@@ -72,4 +76,9 @@ func VerifyToken(tokenString string) (usertkn string, err error) {
 	usertkn = claims["usertkn"].(string)
 
 	return usertkn, nil
+}
+
+type UnauthorisedMessage struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
 }
