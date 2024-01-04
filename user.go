@@ -23,8 +23,10 @@ type Permissions struct {
 	ManageAPI             bool `json:"manage_api"`
 	BannedVehicles        bool `json:"banned_vehicles"`
 	Marketing             bool `json:"marketing"`
+	ExportData            bool `json:"export_data"`
 }
 
+// User represents a user in the system. It contains information such as ID, name, email, activity status, last login, entered date, entered by, token, password expiry date, permissions
 type User struct {
 	ID                 int            `json:"id"`
 	Name               string         `json:"name"`
@@ -40,7 +42,35 @@ type User struct {
 	Locations          map[int]string `json:"locations"`
 }
 
-// Login ------------------------------------------------------------------------------------
+// Get retrieves user information from the database based on the provided user token.
+//
+// The user token is used to query the "bo_user" table and retrieve the user's details such as ID, name, email,
+// active status, last login, entered date, entered by, token, password expiry date, and client ID.
+//
+// If the user token is not found in the database, the function returns ErrInvalidUserToken.
+//
+// If there is any unexpected error reading from the database, the function returns an error message with the
+// details of the error.
+//
+// If the user is inactive, the function returns ErrUserInActive.
+//
+// The function also retrieves the user's permissions from the "bo_user_security" table, such as permissions to
+// manage tariff, manage permits, view reports, manage locations, manage users, manage contacts, manage customer
+// support, view API, manage API, banned vehicles, and marketing permissions.
+//
+// Additionally, the function retrieves the user's locations from the "bo_user_locations" table and stores them in
+// the "Locations" field of the User struct.
+//
+// Finally, the function updates the "last_login" field of the "bo_user" table with the current timestamp.
+//
+// Usage:
+//
+//	usr := User{}
+//	err := usr.Get(userTkn, db)
+//	if err != nil {
+//	    // handle error
+//	}
+//	// use usr for further processing
 func (m *User) Get(userTkn string, db *sql.DB) error {
 
 	sqlS := "SELECT id, name, email, active, last_login, entered, entered_by, tkn,password_expiry,clientid FROM bo_user WHERE tkn=?"
