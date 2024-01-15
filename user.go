@@ -40,6 +40,7 @@ type User struct {
 	Permissions        Permissions    `json:"permissions"`
 	ClientId           int            `json:"clientid"`
 	Locations          map[int]string `json:"locations"`
+	UserType           string         `json:"user_type"`
 }
 
 // Get retrieves user information from the database based on the provided user token.
@@ -73,11 +74,11 @@ type User struct {
 //	// use usr for further processing
 func (m *User) Get(userTkn string, db *sql.DB) error {
 
-	sqlS := "SELECT id, name, email, active, last_login, entered, entered_by, tkn,password_expiry,clientid FROM bo_user WHERE tkn=?"
+	sqlS := "SELECT id, name, email, active, last_login, entered, entered_by, tkn,password_expiry,clientid,user_type FROM bo_user WHERE tkn=?"
 	var lastLogin sql.NullTime
 	var passwordExpiry sql.NullTime
 
-	err := db.QueryRow(sqlS, userTkn).Scan(&m.ID, &m.Name, &m.Email, &m.Active, &lastLogin, &m.Entered, &m.EnteredBy, &m.Tkn, &passwordExpiry, &m.ClientId)
+	err := db.QueryRow(sqlS, userTkn).Scan(&m.ID, &m.Name, &m.Email, &m.Active, &lastLogin, &m.Entered, &m.EnteredBy, &m.Tkn, &passwordExpiry, &m.ClientId, &m.UserType)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return ErrInvalidUserToken
